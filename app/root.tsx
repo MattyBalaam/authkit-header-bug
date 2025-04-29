@@ -7,7 +7,17 @@ import {
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 
-import "./tailwind.css";
+
+import { getWorkOsSession } from "~/util/auth";
+
+export const loader = async ({ request }: { request: Request }) => {
+
+  console.log('root loader')
+
+  await getWorkOsSession(request);
+
+  return {};
+}
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -23,6 +33,9 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+
+
+
   return (
     <html lang="en">
       <head>
