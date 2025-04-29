@@ -1,11 +1,9 @@
-import { authLoader } from '@workos-inc/authkit-remix';
-import type { LoaderFunctionArgs } from 'react-router-dom';
-import { workOSConfig } from '~/util/auth';
-
+import { authLoader } from "@workos-inc/authkit-remix";
+import type { LoaderFunctionArgs } from "react-router-dom";
 
 const callback = authLoader({
   onSuccess: (data) => {
-    console.log('WorkOS callback success', data);
+    console.log("WorkOS callback success", data);
   },
 });
 
@@ -17,12 +15,9 @@ export const loader = async ({
   context,
 }: LoaderFunctionArgs) => {
   try {
-    // make sure that we have a valid config already setup
-    await workOSConfig;
-
     return await callback({ request, params, context });
   } catch (thrown) {
-    console.error('WorkOS callback error', thrown);
+    console.error("WorkOS callback error", thrown);
     throw thrown;
   }
 };
