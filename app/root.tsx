@@ -9,47 +9,30 @@ import {
 } from "@remix-run/react";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 
-import { authkitLoader } from "@workos-inc/authkit-remix";
 import { getToast } from "remix-toast";
+import { getAuthKitHeaders } from "~/util/auth";
 
-const parseJwt = (token: string) => {
-  try {
-    return JSON.parse(atob(token.split(".")[1])).exp;
-  } catch (e) {
-    return null;
-  }
-};
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const authKitHeaders = await getAuthKitHeaders(request);
 
-export const loader = async (args: LoaderFunctionArgs) =>
-  authkitLoader(
-    args,
-    async ({ auth }) => {
-      const { toast, headers } = await getToast(args.request);
+  const { toast, headers } = await getToast(request);
 
-      console.log(
-        "Root. " + new Date().toISOString() + " Access Token end:",
-        auth?.accessToken?.slice(-10),
-      );
+  console.log(toast);
 
-      console.log(
-        "expires at " +
-          new Date(parseJwt(auth.accessToken) * 1000).toISOString(),
-      );
-
-      console.log(toast);
-
-      return data(
-        {
-     
-          toast,
-        },
-        {
-          headers,
-        },
-      );
+  return data(
+    {
+      toast,
     },
-    { ensureSignedIn: true },
+    {
+      headers: [
+        // These headers are required to clear the toast
+        ...headers,
+        // These headers are required to refresh the Work OS session
+        ...authKitHeaders,
+      ],
+    },
   );
+};
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -77,7 +60,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {rootData?.toast ? (
-          <aside style={{background: 'yellow'}}>
+          <aside style={{ background: "yellow" }}>
             {JSON.stringify(rootData?.toast)} <br />
             [this should only show once, and disappear on navigation]
           </aside>

@@ -1,19 +1,12 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import { authkitLoader } from "@workos-inc/authkit-remix";
+import { getWorkOsData } from "~/util/auth";
 
-export const loader = (args: LoaderFunctionArgs) =>
-  authkitLoader(
-    args,
-    async ({ auth }) => {
-      console.log("Access Token end:", auth?.accessToken?.slice(-10));
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  await getWorkOsData(request);
 
-      return {
-        user: auth.user,
-      };
-    },
-    { ensureSignedIn: true },
-  );
+  return null;
+};
 
 export default function Index() {
   return (

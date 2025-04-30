@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
-import { authkitLoader } from "@workos-inc/authkit-remix";
+import { getWorkOsData } from "~/util/auth";
 
 export const meta: MetaFunction = () => {
   return [
@@ -9,18 +9,11 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = (args: LoaderFunctionArgs) =>
-  authkitLoader(
-    args,
-    async ({ auth }) => {
-      console.log("Access Token end:", auth?.accessToken?.slice(-10));
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { user } = await getWorkOsData(request);
 
-      return {
-        user: auth.user?.firstName,
-      };
-    },
-    { ensureSignedIn: true },
-  );
+  return user;
+};
 
 export default function Index() {
   return (
