@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import { authkitLoader } from "@workos-inc/authkit-remix";
+import { jsonWithSuccess } from "remix-toast";
 
 export const loader = (args: LoaderFunctionArgs) =>
   authkitLoader(
@@ -15,17 +16,27 @@ export const loader = (args: LoaderFunctionArgs) =>
     { ensureSignedIn: true },
   );
 
+export const action = () => {
+  return jsonWithSuccess(
+    {},
+    "Action was successful on another child at " + new Date().toISOString(),
+  );
+};
+
 export default function Index() {
-  const {lastName} = useLoaderData<typeof loader>();
+  const { lastName } = useLoaderData<typeof loader>();
 
   return (
     <main>
       <h2>Another child</h2>
-      <p>{JSON.stringify({lastName})}</p>
-      <Outlet />
+      <p>{JSON.stringify({ lastName })}</p>
+
+      <Form method="POST">
+        <button type="submit">Click this to do an action</button>
+      </Form>
 
       <Link to="/child-with-multiple-loaders">
-        Keep switching routes until session expires
+        Toast message should disappear after navigation
       </Link>
     </main>
   );

@@ -1,33 +1,55 @@
 import {
+  data,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteLoaderData,
 } from "@remix-run/react";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 
 import { authkitLoader } from "@workos-inc/authkit-remix";
+import { getToast } from "remix-toast";
 
 const parseJwt = (token: string) => {
   try {
-    return JSON.parse(atob(token.split('.')[1])).exp;
+    return JSON.parse(atob(token.split(".")[1])).exp;
   } catch (e) {
     return null;
   }
 };
 
-export const loader = (args: LoaderFunctionArgs) =>
-  authkitLoader(args, async ({ auth }) => {
+export const loader = async (args: LoaderFunctionArgs) =>
+  authkitLoader(
+    args,
+    async ({ auth }) => {
+      const { toast, headers } = await getToast(args.request);
 
-    console.log("Root. " + new Date().toISOString() +" Access Token end:", auth?.accessToken?.slice(-10));
+      console.log(
+        "Root. " + new Date().toISOString() + " Access Token end:",
+        auth?.accessToken?.slice(-10),
+      );
 
-    console.log('expires at ' + new Date(parseJwt(auth.accessToken) * 1000).toISOString())
+      console.log(
+        "expires at " +
+          new Date(parseJwt(auth.accessToken) * 1000).toISOString(),
+      );
 
-    return {
-      data: auth.user?.firstName,
-    };
-  }, { ensureSignedIn: true });
+      console.log(toast);
+
+      return data(
+        {
+     
+          toast,
+        },
+        {
+          headers,
+        },
+      );
+    },
+    { ensureSignedIn: true },
+  );
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -43,6 +65,8 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const rootData = useRouteLoaderData<typeof loader>("root");
+
   return (
     <html lang="en">
       <head>
@@ -52,6 +76,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        {rootData?.toast ? (
+          <aside style={{background: 'yellow'}}>
+            {JSON.stringify(rootData?.toast)} <br />
+            [this should only show once, and disappear on navigation]
+          </aside>
+        ) : null}
         {children}
         <ScrollRestoration />
         <Scripts />
